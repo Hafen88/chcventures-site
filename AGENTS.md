@@ -3,7 +3,7 @@
 Operating contract for this repo. Any AI agent or human editing this site reads this first.
 
 ## What this is
-The public website for CHC Ventures LLC at https://chcventures.llc. Three pages of plain static HTML and one hand written stylesheet. There is no build step, no npm, no framework, and no `node_modules`. The file you edit is the file that gets served.
+The public website for CHC Ventures LLC at https://chcventures.llc. Four pages of plain static HTML and one hand written stylesheet. There is no build step, no npm, no framework, and no `node_modules`. The file you edit is the file that gets served.
 
 ## Hard rules
 - **No build step. No npm. No framework.** If you are about to add a `package.json`, stop. See "Why static" below.
@@ -13,47 +13,50 @@ The public website for CHC Ventures LLC at https://chcventures.llc. Three pages 
 - Do not add fake logos, testimonials, team pages, or client lists. Do not list concept stage or parked ventures.
 
 ## The shared block rule
-This is the one real cost of having no build step. Three files repeat the same markup:
+This is the one real cost of having no build step. Four files repeat the same markup:
 
 1. **`<head>`** block. Everything except `<title>`, `description`, `canonical`, and the three `og:` values, which are per page.
-2. **`<header class="site-header">`** block. Same markup in all three files, but two things differ by page: which nav link carries `aria-current="page"`, and the link depth. Root pages use `./`, `story/`, `about/`. Pages one level down use `../`, `../story/`, `../about/`.
-3. **`<footer class="site-footer">`** block. Byte for byte identical across all three files.
+2. **`<header class="site-header">`** block. Same markup in all four files, but two things differ by page: which nav link carries `aria-current="page"`, and the link depth. Root pages use `./`, `story/`, `about/`. Pages one level down use `../`, `../story/`, `../about/`.
+3. **`<footer class="site-footer">`** block. Byte for byte identical across all four files.
 
 Both repeated blocks are marked with a `SHARED BLOCK` HTML comment.
 
-**When you change a shared block, change it in all three files in the same commit, then diff them to confirm they match.** Nothing enforces this. There is no template. If you change the footer in one file and not the others, the site is silently inconsistent and nobody will notice.
+**When you change a shared block, change it in all four files in the same commit, then diff them to confirm they match.** Nothing enforces this. There is no template. If you change the footer in one file and not the others, the site is silently inconsistent and nobody will notice.
 
 Quick check before committing a shared-block change:
 ```
-for f in index.html story/index.html about/index.html; do
+for f in index.html story/index.html build/index.html about/index.html; do
   grep -A2 'class="site-footer"' $f | md5sum
 done
 ```
-All three hashes must match.
+All four hashes must match.
 
 ## Files
 ```
 index.html         Home. Hero, two venture cards, the #ventures anchor section.
 story/index.html   Story. First person, seven blocks.
+build/index.html   Build log. Six drafts, each with stack, Proved, Ended, Carried.
 about/index.html   About. Hero, two venture cards, Company Details, Founder, contact.
 style.css          The entire stylesheet. Tokens at the top, then layout, then components.
 favicon.svg        CHC monogram.
 robots.txt         Allow all, points at the sitemap.
-sitemap.xml        Three URLs. UPDATE THIS whenever a page is added or removed.
+sitemap.xml        Four URLs. UPDATE THIS whenever a page is added or removed.
 .nojekyll          Stops GitHub Pages running Jekyll over the files.
 ```
 
 **There is no `CNAME` file yet, deliberately.** The site is being verified on the free `github.io` URL before the custom domain is attached. When the host is ratified and the DNS cutover happens, add a one line `CNAME` file at the repo root containing exactly `chcventures.llc`, and read the DNS section below first.
 
 ## Paths are relative, on purpose
-Every asset and nav link is relative, not absolute. That means the site works unchanged in all three places it needs to: served at a domain root, served from a `github.io/repo-name/` subpath during verification, and opened straight off the filesystem with no server. Do not "clean this up" to absolute `/style.css` paths. It breaks subpath serving, which is how the site gets verified before DNS is touched.
+Every asset and nav link is relative, not absolute. That means the site works unchanged in all four places it needs to: served at a domain root, served from a `github.io/repo-name/` subpath during verification, and opened straight off the filesystem with no server. Do not "clean this up" to absolute `/style.css` paths. It breaks subpath serving, which is how the site gets verified before DNS is touched.
 
 The `canonical` and `og:url` tags are the exception. They are absolute and point at `https://chcventures.llc`, on purpose, so a staging copy on `github.io` never gets indexed as a separate site.
 
 ## Structure, and what is deliberately absent
-Three pages: Home, Story, About. **Ventures is not a page.** It is an anchor section on Home at `#ventures`, and every venture card links there.
+Four pages: Home, Story, Build, About. **Ventures is not a page.** It is an anchor section on Home at `#ventures`, and every venture card links there.
 
 Per-venture pages (`/throughline/`, `/empathos/`) are deferred on purpose. Each gets a page when it has something true to put on one: a screenshot, a waitlist, a first customer. A page for a pre-revenue concept reads as vapor, which is the failure mode this site exists to avoid.
+
+**The build log is written in first person, like Story.** It is a personal build history and it does not work in third person. That is a deliberate exception to the copy rule, recorded in the owner's canon.
 
 **Page count is a stack decision, not a preference.** Past roughly six pages the shared block rule stops being manageable and the site should move to Hugo (single Go binary, zero npm, output is still plain HTML). Do not move to Astro or Eleventy, which reintroduce the npm surface. If you are adding the fourth or fifth page, note it. If you are adding the seventh, raise the Hugo question first.
 
