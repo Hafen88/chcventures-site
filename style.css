@@ -133,6 +133,17 @@ a { color: inherit; }
 
 .hero > div { max-width: 56rem; }
 
+.hero-mark {
+  display: block;
+  width: 112px;
+  height: auto;
+  margin: 0 auto 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .hero-mark { width: 142px; }
+}
+
 .hero h1 {
   font-size: clamp(2.5rem, 7vw, 4.5rem);
   color: #fff;
