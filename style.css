@@ -224,6 +224,16 @@ a { color: inherit; }
 
 .venture h3 { font-size: 1.875rem; margin-bottom: 1rem; }
 
+.status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slate-80);
+}
+
+.stack-sm > .cta { margin-top: 1.75rem; }
+
 /* ---------- Pull quote ---------- */
 .pullquote {
   font-size: 1.125rem;
@@ -246,6 +256,7 @@ a { color: inherit; }
   border-radius: 999px;
   transition: background-color 0.3s ease, transform 0.1s ease;
 }
+.btn--sm { padding: 0.8125rem 2rem; font-size: 0.9375rem; }
 .btn:hover { background: var(--accent); }
 .btn:active { transform: scale(0.96); }
 
