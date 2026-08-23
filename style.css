@@ -548,3 +548,28 @@ body[data-page="about"] { --glow-x: 80%; --glow-y: 80%; }
   }
   .card:hover, .btn:hover { transform: none; }
 }
+
+/* ---------- 5. Density ----------
+   Added 2026-08-23. The vertical rhythm was set for a one page site and read
+   as too airy once there were four pages of real content. This block only
+   reduces space. It changes no color, no size, and no order. */
+.hero { padding-block: clamp(4.5rem, 8vw, 6rem); }
+.hero-mark { margin-bottom: 1rem; }
+.hero h1 { margin-bottom: 1.25rem; }
+
+.section { padding-block: clamp(3.5rem, 6vw, 4.5rem); }
+
+.stack-lg > * + * { margin-top: 2.5rem; }
+.stack-xl > * + * { margin-top: 3.25rem; }
+
+.venture + .venture { margin-top: 2.25rem; padding-top: 2.25rem; }
+
+.draft + .draft { margin-top: 2.5rem; }
+.draft-stack { margin-bottom: 1rem; }
+.draft-notes dd { margin-bottom: 0.875rem; }
+
+@media (min-width: 768px) {
+  .draft-notes dd { margin-bottom: 0.875rem; }
+}
+
+.site-footer { padding-block: 2.25rem; }
