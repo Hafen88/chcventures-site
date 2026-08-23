@@ -19,6 +19,8 @@ This is the one real cost of having no build step. Four files repeat the same ma
 2. **`<header class="site-header">`** block. Same markup in all four files, but two things differ by page: which nav link carries `aria-current="page"`, and the link depth. Root pages use `./`, `story/`, `about/`. Pages one level down use `../`, `../story/`, `../about/`.
 3. **`<footer class="site-footer">`** block. Byte for byte identical across all four files.
 
+**Every page also carries `data-page` on its `<body>`**, one of `home`, `story`, `build`, `about`. It is not decoration. `style.css` reads it to position that page's ambient hero light. A new page with no `data-page` still renders correctly, it just falls back to the neutral light position. Add a value for any page you add, and add the matching rule in the Ambient light block of `style.css`.
+
 Both repeated blocks are marked with a `SHARED BLOCK` HTML comment.
 
 **When you change a shared block, change it in all four files in the same commit, then diff them to confirm they match.** Nothing enforces this. There is no template. If you change the footer in one file and not the others, the site is silently inconsistent and nobody will notice.
@@ -42,9 +44,10 @@ favicon.svg        CHC monogram.
 robots.txt         Allow all, points at the sitemap.
 sitemap.xml        Four URLs. UPDATE THIS whenever a page is added or removed.
 .nojekyll          Stops GitHub Pages running Jekyll over the files.
+CNAME              chcventures.llc. Do not delete; it is what binds the custom domain.
 ```
 
-**There is no `CNAME` file yet, deliberately.** The site is being verified on the free `github.io` URL before the custom domain is attached. When the host is ratified and the DNS cutover happens, add a one line `CNAME` file at the repo root containing exactly `chcventures.llc`, and read the DNS section below first.
+**`CNAME` exists and holds exactly `chcventures.llc`.** The DNS cutover ran 2026-08-22 and the site serves at the apex over HTTPS with Enforce HTTPS on. Do not delete or edit that file; removing it drops the custom domain. (This section previously said no `CNAME` existed yet, which was true only during pre-cutover verification.)
 
 ## Paths are relative, on purpose
 Every asset and nav link is relative, not absolute. That means the site works unchanged in all four places it needs to: served at a domain root, served from a `github.io/repo-name/` subpath during verification, and opened straight off the filesystem with no server. Do not "clean this up" to absolute `/style.css` paths. It breaks subpath serving, which is how the site gets verified before DNS is touched.
@@ -79,7 +82,28 @@ Surface #FFFFFF    page background, cards
 ```
 Headings: Playfair Display. Body: Plus Jakarta Sans. Both from Google Fonts with real fallback stacks.
 
-One accent color. Text forward. No second accent, no gradients, no icon sets.
+**Third register, added 2026-08-23.** A monospace stack via `--font-mono` carries the small factual labels only: build log dates and stack lines, definition list labels, the status eyebrow, and `.eyebrow`. Data reads as data, prose reads as prose. It is not a body or heading face. Do not widen its use.
+
+One accent color. Text forward. No second accent, no icon sets.
+
+**Gradient rule, with its one exception.** No decorative gradients, with a single deliberate exception: the ambient hero light, a soft radial in the accent color at low alpha, positioned per page from `data-page`. It is in the Ambient light block of `style.css` and it is intentional. Do not delete it as a "no gradients" cleanup. Any *other* gradient is still out.
+
+## Motion, added 2026-08-23
+The site has a CSS only motion system. Still zero JavaScript. It has four parts and four constraints, and the constraints are the part that matters.
+
+**The four parts**
+1. **Cross document view transitions.** `@view-transition { navigation: auto; }` plus three named elements: `site-header`, `hero-mark`, `hero-panel`. The header holds still across a navigation, the logo travels, the hero cross fades. Chromium and Safari today. Firefox falls back to a plain page load with no visual penalty, which is fine and needs no workaround.
+2. **Load sequence.** The hero mark, `h1`, and paragraph rise on load, staggered.
+3. **Ambient light.** One radial in the hero, parked in a different corner per page via `data-page`. Paint only, it moves no boxes.
+4. **Mono register.** See Styling.
+
+**The four constraints. Do not break these.**
+1. **All text is visible with JavaScript off, CSS animation off, and no hover.** Nothing may gate visibility.
+2. **Everything that moves lives inside `@media (prefers-reduced-motion: no-preference)`**, and a `prefers-reduced-motion: reduce` block neutralizes transitions and hover transforms. The reduced motion render must stay **pixel identical to the normal render at rest**. It is today. Verify by screenshot diff, not by reading the CSS.
+3. **Use `animation-fill-mode: backwards`, never `both`.** This is the trap that broke constraint 2 the first time. `both` holds a transform after the animation ends, which promotes the element to a compositing layer and changes text antialiasing, so the two renders differ visibly even though no box moved. `backwards` still prevents the pre animation flash and drops the layer when the animation finishes.
+4. **A `view-transition-name` must be unique per document.** Each of the three appears exactly once per page. If you add a fourth, check every page.
+
+Density was tuned the same day. Hero, section, stack, build entry, and footer spacing all sit in the Density block at the bottom of `style.css`, which only ever reduces space and changes no color, size, or order.
 
 ## Deploy
 Push to `main`. GitHub Pages serves it. There are no previews and no rollback button, so `git revert` is the undo.
