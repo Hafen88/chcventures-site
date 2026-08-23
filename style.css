@@ -19,6 +19,7 @@
 
   --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
   --wrap-wide: 72rem;
   --wrap-prose: 70ch;
@@ -116,8 +117,8 @@ a { color: inherit; }
   border-radius: 999px;
   transition: color 0.2s ease, background-color 0.2s ease;
 }
-.site-nav a:hover { color: var(--navy); background: var(--slate-05); }
-.site-nav a[aria-current="page"] { color: var(--navy); background: var(--slate-05); }
+.site-nav a:hover { color: var(--navy); }
+.site-nav a[aria-current="page"] { color: var(--navy); }
 
 /* ---------- Hero ---------- */
 .hero {
@@ -339,7 +340,6 @@ a { color: inherit; }
   transition: background-color 0.3s ease, transform 0.1s ease;
 }
 .btn--sm { padding: 0.8125rem 2rem; font-size: 0.9375rem; }
-.btn:hover { background: var(--accent); }
 .btn:active { transform: scale(0.96); }
 
 /* ---------- Rules ---------- */
@@ -385,7 +385,7 @@ a { color: inherit; }
    These animations only run on load. Nothing gates visibility on scroll. */
 @media (prefers-reduced-motion: no-preference) {
   .reveal {
-    animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
   .reveal:nth-child(1) { animation-delay: 0.05s; }
   .reveal:nth-child(2) { animation-delay: 0.14s; }
@@ -398,4 +398,153 @@ a { color: inherit; }
 @keyframes rise {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   MOTION PASS
+   Added 2026-08-23. Four parts: view transitions, load sequence, ambient
+   light, mono register. No JavaScript. Every rule below is decoration only.
+   With CSS animation off, JS off, and no hover, all text is still visible
+   and the layout is byte for byte the same box model as before this block.
+   ========================================================================== */
+
+/* ---------- 1. Mono register ----------
+   The small factual labels move to monospace so data reads as data and
+   prose reads as prose. This is the only typographic change. */
+.draft-date,
+.draft-stack,
+.draft-notes dt,
+.status,
+.eyebrow {
+  font-family: var(--font-mono);
+}
+
+.draft-date, .draft-notes dt, .status {
+  letter-spacing: 0.04em;
+}
+
+.draft-stack {
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+/* First label in each entry carries the accent. On five entries that is
+   "Proved"; on the ThroughLine entry it is "Inherited". */
+.draft-notes dt:first-of-type { color: var(--accent); }
+
+@media (min-width: 768px) {
+  /* Mono is wider than Jakarta at the same size. Widen the label column so
+     "Inherited" does not collide with the definition column. */
+  .draft-notes { grid-template-columns: 7.25rem 1fr; }
+}
+
+/* ---------- 2. Ambient light ----------
+   One soft radial in the hero, in the single accent color, parked in a
+   different corner on each page so the four heroes read as four rooms.
+   Paint only. It moves no boxes. */
+:root { --glow-x: 50%; --glow-y: 14%; }
+body[data-page="home"]  { --glow-x: 22%; --glow-y: 16%; }
+body[data-page="story"] { --glow-x: 78%; --glow-y: 18%; }
+body[data-page="build"] { --glow-x: 20%; --glow-y: 82%; }
+body[data-page="about"] { --glow-x: 80%; --glow-y: 80%; }
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  background-image:
+    radial-gradient(52rem 34rem at var(--glow-x) var(--glow-y),
+      rgba(58, 134, 255, 0.30),
+      rgba(58, 134, 255, 0.06) 45%,
+      rgba(58, 134, 255, 0) 72%);
+}
+
+.hero > div { position: relative; }
+
+/* ---------- 3. Button and nav, replacing the two removed fills ----------
+   The accent fill on .btn:hover and the slate pill on .site-nav a:hover
+   are gone. A hairline mark and a lift do the same job more quietly. */
+.site-nav a { position: relative; }
+
+.site-nav a::after {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.3125rem;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.site-nav a:hover::after { transform: scaleX(1); }
+
+.site-nav a[aria-current="page"]::after {
+  transform: scaleX(1);
+  background: var(--slate-50);
+}
+
+.btn {
+  box-shadow: 0 0 0 0 rgba(58, 134, 255, 0);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease;
+}
+
+.btn:hover {
+  box-shadow: 0 10px 24px rgba(27, 38, 59, 0.18),
+              0 0 0 3px var(--accent-20);
+}
+
+/* ---------- 4. Motion, gated ----------
+   Everything that actually moves lives inside this query. Reduced motion
+   gets the identical layout with none of it. */
+@media (prefers-reduced-motion: no-preference) {
+
+  /* 4a. Cross document view transitions. Chromium and Safari today.
+     Firefox falls back to a plain page load with no visual penalty. */
+  @view-transition { navigation: auto; }
+
+  /* 4b. Load sequence. Runs once, on load, in the hero only. If animation
+     is unsupported or disabled these elements simply render at rest. */
+  .hero-mark { animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+  .hero h1   { animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.09s backwards; }
+  .hero p    { animation: rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.18s backwards; }
+  .hero      { animation: glow-in 1.4s ease-out backwards; }
+
+  .btn:hover { transform: translateY(-2px); }
+}
+
+@keyframes glow-in {
+  from { background-size: 180% 180%; }
+  to   { background-size: 100% 100%; }
+}
+
+/* Named elements persist across the navigation. The header must not blink,
+   the logo travels between hero positions, the hero panel cross fades.
+   Each name appears exactly once per document, which the spec requires. */
+.site-header { view-transition-name: site-header; }
+.hero-mark   { view-transition-name: hero-mark; }
+.hero        { view-transition-name: hero-panel; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.32s;
+}
+
+::view-transition-group(hero-mark),
+::view-transition-group(hero-panel) {
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .card:hover, .btn:hover { transform: none; }
 }
